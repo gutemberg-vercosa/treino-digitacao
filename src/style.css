@@ -10,6 +10,8 @@
   --accent: #0071e3;
   --accent-soft: rgb(0 113 227 / .12);
   --shadow: 0 4px 24px rgb(0 0 0 / .06);
+  --seg: rgb(118 118 128 / .12);
+  --seg-on: #fff;
   --baixo: #ff3b30;
   --medio: #ff9500;
   --alto: #34c759;
@@ -27,6 +29,8 @@
     --accent: #2997ff;
     --accent-soft: rgb(41 151 255 / .16);
     --shadow: none;
+    --seg: rgb(118 118 128 / .24);
+    --seg-on: #636366;
     --baixo: #ff453a;
     --medio: #ff9f0a;
     --alto: #30d158;
@@ -65,15 +69,10 @@ h1 { margin: 0; font-size: 2rem; line-height: 1.1; letter-spacing: -.03em; }
   grid-template-columns: 1fr 1fr;
   padding: 3px;
   border-radius: 12px;
-  background: rgb(118 118 128 / .12);
+  background: var(--seg);
 }
 .abas button { padding: 8px 12px; border-radius: 9px; font-size: .9rem; font-weight: 500; transition: background .2s; }
-.abas [aria-selected="true"] { background: var(--card); box-shadow: 0 1px 4px rgb(0 0 0 / .12); font-weight: 600; }
-
-@media (prefers-color-scheme: dark) {
-  .abas { background: rgb(118 118 128 / .24); }
-  .abas [aria-selected="true"] { background: #636366; }
-}
+.abas [aria-selected="true"] { background: var(--seg-on); box-shadow: 0 1px 4px rgb(0 0 0 / .12); font-weight: 600; }
 
 /* Desafio do dia */
 
@@ -150,6 +149,7 @@ h1 { margin: 0; font-size: 2rem; line-height: 1.1; letter-spacing: -.03em; }
   position: absolute;
   inset: 0;
   width: 100%;
+  height: 100%;
   opacity: 0;
   resize: none;
   font-size: 16px; /* evita o zoom automático do iOS */

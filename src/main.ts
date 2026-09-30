@@ -1,6 +1,6 @@
 import { buscarRanking, enviarResultado, iniciarDesafio, type Ranking } from './api';
 import { dataHoje, fraseDoDia } from './desafio';
-import { Sessao, type Resultado } from './sessao';
+import { Sessao, type Resultado, type Trecho } from './sessao';
 import { TEXTOS } from './textos';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -30,7 +30,7 @@ let modo: 'treino' | 'desafio' = 'treino';
 let sessao: Sessao;
 let indice = -1;
 let relogio = 0;
-let inicioDesafio: Promise<unknown> | null = null;
+let inicioDesafio: Promise<unknown> = Promise.resolve();
 
 /** No desafio, só a primeira rodada completa do dia vai para o ranking. */
 const valendo = () => modo === 'desafio' && ler('desafio-feito') !== dataHoje();
@@ -50,13 +50,13 @@ function iniciar(novoTexto: boolean) {
   entrada.value = '';
   resultado.hidden = true;
   $('dica').hidden = false;
-  prepararDesafio();
 
   texto.replaceChildren(...[...sessao.texto].map((c) => {
     const span = document.createElement('span');
     span.textContent = c;
     return span;
   }));
+  prepararDesafio();
   pintar();
   atualizarStatus();
   entrada.focus({ preventScroll: true });
@@ -86,7 +86,10 @@ function aoDigitar() {
     $('dica').hidden = true;
     relogio = window.setInterval(atualizarStatus, 250);
     // O servidor marca a hora de início; a digitação segue sem esperar a resposta.
-    if (valendo()) inicioDesafio = iniciarDesafio(jogador).catch((e: Error) => e);
+    if (valendo()) {
+      inicioDesafio = iniciarDesafio(jogador);
+      inicioDesafio.catch(() => { /* o erro aparece quando enviar() aguardar esta promessa */ });
+    }
   }
   pintar();
 
@@ -120,8 +123,7 @@ function prepararDesafio() {
 async function enviar(precisao: number) {
   $('ranking-msg').textContent = 'Enviando seu resultado…';
   try {
-    const erroInicio = await inicioDesafio;
-    if (erroInicio instanceof Error) throw erroInicio;
+    await inicioDesafio;
     const rk = await enviarResultado(jogador, apelido.value.trim(), precisao);
     salvar('desafio-feito', rk.data);
     mostrarRanking(rk);
@@ -192,13 +194,20 @@ function desenharGrafico(r: Resultado) {
   return lento;
 }
 
-function diagnostico(r: Resultado, trechoLento: string): string {
+/** Texto do trecho ampliado até palavras inteiras, para citá-lo no diagnóstico. */
+function trechoInteiro({ inicio, fim }: Trecho) {
+  const t = sessao.texto;
+  const depois = t.indexOf(' ', fim - 1);
+  return t.slice(t.lastIndexOf(' ', inicio) + 1, depois < 0 ? t.length : depois);
+}
+
+function diagnostico(r: Resultado, lento: Trecho): string {
   const teclas = r.teclas.slice(0, 3).map(([c]) => `“${nomeTecla(c)}”`).join(', ');
   if (r.precisao < 0.95) {
     return `Sua precisão ficou em ${pct(r.precisao)}. Abaixo de 95%, corrigir erros custa mais tempo do que digitar um pouco mais devagar: reduza o ritmo e priorize acertar${teclas ? `, com atenção a ${teclas}` : ''}. A velocidade vem com a prática.`;
   }
   if (r.estabilidade < 0.85) {
-    return `A precisão foi boa, mas o ritmo oscilou entre os trechos. O mais lento foi “${trechoLento.trim()}”. Manter um ritmo constante, mesmo que um pouco menor, costuma render mais do que alternar picos de velocidade e pausas.`;
+    return `A precisão foi boa, mas o ritmo oscilou entre os trechos. O mais lento foi “${trechoInteiro(lento)}”. Manter um ritmo constante, mesmo que um pouco menor, costuma render mais do que alternar picos de velocidade e pausas.`;
   }
   return `Boa combinação de precisão e ritmo constante. Para ganhar velocidade daqui em diante, aumente o ritmo aos poucos e só volte a acelerar quando a precisão se mantiver acima de 95%.`;
 }
@@ -215,12 +224,12 @@ function mostrarResultado(r: Resultado) {
   if (recorde) salvar('recorde-ppm', String(r.ppm));
 
   $('r-precisao').textContent = pct(r.precisao);
-  $('r-precisao-conta').textContent = `(${r.digitados} − ${r.erros} erros) ÷ ${r.digitados} toques`;
+  $('r-precisao-conta').textContent = `(${r.digitados} − ${r.erros} ${r.erros === 1 ? 'erro' : 'erros'}) ÷ ${r.digitados} toques`;
   $('r-tempo').textContent = `${num(r.segundos, 1)} s`;
   $('r-tempo-conta').textContent = `${sessao.texto.length} caracteres`;
   $('r-estabilidade').textContent = pct(r.estabilidade);
 
-  const lento = desenharGrafico(r);
+  $('r-diag').textContent = diagnostico(r, desenharGrafico(r));
 
   $('r-teclas-bloco').hidden = r.teclas.length === 0;
   $('r-teclas').replaceChildren(...r.teclas.slice(0, 6).map(([c, n]) => {
@@ -231,10 +240,6 @@ function mostrarResultado(r: Resultado) {
     return el;
   }));
 
-  // Amplia o trecho mais lento até palavras inteiras, para citá-lo no diagnóstico.
-  const t = sessao.texto;
-  const fim = t.indexOf(' ', lento.fim - 1);
-  $('r-diag').textContent = diagnostico(r, t.slice(t.lastIndexOf(' ', lento.inicio) + 1, fim < 0 ? t.length : fim));
   resultado.hidden = false;
   resultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

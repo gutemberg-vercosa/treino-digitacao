@@ -4,7 +4,7 @@ Mede velocidade, precisão e a estabilidade do ritmo de digitação, trecho a tr
 
 **Acesse:** https://gutemberg-vercosa.github.io/treino-digitacao/
 
-<a href="https://gutemberg-vercosa.github.io/treino-digitacao/"><img src="docs/preview.png" width="720" alt="Resultado de uma sessão: 54 palavras por minuto, precisão de 99%, gráfico de ritmo por trecho e teclas com mais erros"></a>
+<a href="https://gutemberg-vercosa.github.io/treino-digitacao/"><img src="docs/preview.png" width="720" alt="Resultado de uma sessão: 79 palavras por minuto, precisão de 99%, gráfico de ritmo por trecho e teclas com mais erros"></a>
 
 ## O que ele faz
 
