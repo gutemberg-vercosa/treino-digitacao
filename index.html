@@ -12,7 +12,18 @@
     <header>
       <h1>Treino de Digitação</h1>
       <p class="sub">Velocidade, precisão e a estabilidade do seu ritmo, trecho a trecho.</p>
+      <nav class="abas" role="tablist">
+        <button type="button" role="tab" data-modo="treino" aria-selected="true">Treino livre</button>
+        <button type="button" role="tab" data-modo="desafio" aria-selected="false">Desafio do dia</button>
+      </nav>
     </header>
+
+    <div class="desafio" id="desafio" hidden>
+      <label>Seu apelido no ranking
+        <input id="apelido" maxlength="20" autocomplete="nickname" placeholder="ex.: Maria">
+      </label>
+      <p id="desafio-status"></p>
+    </div>
 
     <section class="painel">
       <div class="status">
@@ -64,6 +75,12 @@
       <button type="button" class="primario" id="de-novo">Tentar outro texto</button>
     </section>
 
+    <section class="ranking" id="ranking" hidden aria-live="polite">
+      <h2>Ranking de hoje</h2>
+      <p class="ranking-msg" id="ranking-msg"></p>
+      <ol id="ranking-lista"></ol>
+    </section>
+
     <details class="ref">
       <summary>Como ler o resultado</summary>
       <ul>
@@ -71,6 +88,7 @@
         <li><strong>Precisão</strong>: toques certos ÷ total de toques. Erros corrigidos com o apagar continuam contando.</li>
         <li><strong>Estabilidade</strong>: quanto o seu ritmo se manteve igual entre os trechos. Acima de 85%, o ritmo está constante.</li>
         <li>Como referência, 40 PPM é uma velocidade média; acima de 60 PPM já é rápido.</li>
+        <li><strong>Desafio do dia</strong>: no ranking, o PPM é medido pelo servidor, do primeiro toque ao envio. Por isso pode ficar um pouco abaixo do que aparece na tela. Precisa de pelo menos 90% de precisão para entrar.</li>
       </ul>
     </details>
   </main>

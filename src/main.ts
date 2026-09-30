@@ -1,3 +1,5 @@
+import { buscarRanking, enviarResultado, iniciarDesafio, type Ranking } from './api';
+import { dataHoje, fraseDoDia } from './desafio';
 import { Sessao, type Resultado } from './sessao';
 import { TEXTOS } from './textos';
 
@@ -6,34 +8,49 @@ const pct = (v: number) => `${(v * 100).toFixed(0)}%`;
 const num = (v: number, casas = 0) => v.toLocaleString('pt-BR', { maximumFractionDigits: casas });
 const nomeTecla = (c: string) => (c === ' ' ? 'espaço' : c);
 
+// localStorage pode estar bloqueado (aba anônima, por exemplo); nesse caso nada é lembrado.
+function ler(chave: string) {
+  try { return localStorage.getItem(chave) ?? ''; } catch { return ''; }
+}
+function salvar(chave: string, valor: string) {
+  try { localStorage.setItem(chave, valor); } catch { /* segue sem guardar */ }
+}
+
 const entrada = $<HTMLTextAreaElement>('entrada');
 const texto = $('texto');
 const resultado = $('resultado');
+const apelido = $<HTMLInputElement>('apelido');
+const DICA = 'Toque no texto e comece a digitar. O tempo começa na primeira tecla.';
 
+const jogador = ler('jogador') || crypto.randomUUID();
+salvar('jogador', jogador);
+apelido.value = ler('apelido');
+
+let modo: 'treino' | 'desafio' = 'treino';
 let sessao: Sessao;
 let indice = -1;
 let relogio = 0;
+let inicioDesafio: Promise<unknown> | null = null;
 
-function lerRecorde(): number {
-  try { return Number(localStorage.getItem('recorde-ppm')) || 0; } catch { return 0; }
-}
-
-function salvarRecorde(ppm: number) {
-  try { localStorage.setItem('recorde-ppm', String(ppm)); } catch { /* sem armazenamento, sem recorde */ }
-}
+/** No desafio, só a primeira rodada completa do dia vai para o ranking. */
+const valendo = () => modo === 'desafio' && ler('desafio-feito') !== dataHoje();
 
 function iniciar(novoTexto: boolean) {
-  if (novoTexto) {
-    // Sorteia um texto diferente do atual.
-    const anterior = indice;
-    while (indice === anterior) indice = Math.floor(Math.random() * TEXTOS.length);
+  if (modo === 'desafio') {
+    sessao = new Sessao(fraseDoDia(dataHoje()));
+  } else {
+    if (novoTexto) {
+      // Sorteia um texto diferente do atual.
+      const anterior = indice;
+      while (indice === anterior) indice = Math.floor(Math.random() * TEXTOS.length);
+    }
+    sessao = new Sessao(TEXTOS[indice]);
   }
-  sessao = new Sessao(TEXTOS[indice]);
   clearInterval(relogio);
   entrada.value = '';
-  entrada.disabled = false;
   resultado.hidden = true;
   $('dica').hidden = false;
+  prepararDesafio();
 
   texto.replaceChildren(...[...sessao.texto].map((c) => {
     const span = document.createElement('span');
@@ -68,6 +85,8 @@ function aoDigitar() {
   if (comecou && sessao.iniciou) {
     $('dica').hidden = true;
     relogio = window.setInterval(atualizarStatus, 250);
+    // O servidor marca a hora de início; a digitação segue sem esperar a resposta.
+    if (valendo()) inicioDesafio = iniciarDesafio(jogador).catch((e: Error) => e);
   }
   pintar();
 
@@ -75,8 +94,77 @@ function aoDigitar() {
     clearInterval(relogio);
     atualizarStatus();
     entrada.disabled = true;
-    mostrarResultado(sessao.resultado());
+    const r = sessao.resultado();
+    mostrarResultado(r);
+    if (valendo()) enviar(r.precisao);
   }
+}
+
+// --- Desafio do dia --------------------------------------------------------
+
+function prepararDesafio() {
+  const noDesafio = modo === 'desafio';
+  $('desafio').hidden = !noDesafio;
+  $('ranking').hidden = !noDesafio;
+  $('novo').hidden = noDesafio;
+  $('de-novo').hidden = noDesafio;
+
+  const semApelido = valendo() && apelido.value.trim().length < 2;
+  entrada.disabled = semApelido || sessao.terminou;
+  $('dica').textContent = semApelido ? 'Escolha um apelido acima para começar.' : DICA;
+  $('desafio-status').textContent = !noDesafio ? ''
+    : valendo() ? 'A frase é a mesma para todo mundo e muda à meia-noite. Vale a primeira tentativa: recomeçar não zera o relógio.'
+    : 'Você já participou hoje. Pode praticar a frase à vontade; o ranking não muda.';
+}
+
+async function enviar(precisao: number) {
+  $('ranking-msg').textContent = 'Enviando seu resultado…';
+  try {
+    const erroInicio = await inicioDesafio;
+    if (erroInicio instanceof Error) throw erroInicio;
+    const rk = await enviarResultado(jogador, apelido.value.trim(), precisao);
+    salvar('desafio-feito', rk.data);
+    mostrarRanking(rk);
+  } catch (e) {
+    const msg = (e as Error).message;
+    if (msg.includes('já fez')) salvar('desafio-feito', dataHoje());
+    $('ranking-msg').textContent = msg;
+  }
+  prepararDesafio();
+}
+
+async function carregarRanking() {
+  $('ranking-msg').textContent = 'Carregando…';
+  try {
+    mostrarRanking(await buscarRanking(jogador));
+  } catch (e) {
+    $('ranking-msg').textContent = (e as Error).message;
+  }
+}
+
+function mostrarRanking(rk: Ranking) {
+  const { meu } = rk;
+  $('ranking-msg').textContent = meu
+    ? `Você ficou em ${meu.posicao}º de ${rk.total}, com ${num(meu.ppm, 1)} PPM medidos pelo servidor.`
+    : rk.total ? `${rk.total} ${rk.total === 1 ? 'pessoa fez' : 'pessoas fizeram'} o desafio hoje.`
+    : 'Ninguém fez o desafio de hoje ainda. Seja a primeira pessoa!';
+
+  $('ranking-lista').replaceChildren(...rk.top.map((l, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="pos"></span><span class="nome"></span><span class="ppm"></span>';
+    li.children[0].textContent = `${i + 1}º`;
+    li.children[1].textContent = l.apelido;
+    li.children[2].textContent = `${num(l.ppm, 1)} PPM`;
+    li.classList.toggle('meu', !!meu && meu.posicao === i + 1 && meu.apelido === l.apelido);
+    return li;
+  }));
+}
+
+function trocarModo(novo: typeof modo) {
+  modo = novo;
+  document.querySelectorAll<HTMLElement>('.abas button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.modo === novo)));
+  iniciar(novo === 'treino');
+  if (novo === 'desafio') carregarRanking();
 }
 
 function faixaVelocidade(ppm: number): [string, string] {
@@ -122,9 +210,9 @@ function mostrarResultado(r: Resultado) {
   faixa.textContent = rotulo;
   faixa.className = `faixa ${classe}`;
 
-  const recorde = r.ppm > lerRecorde() && r.precisao >= 0.9;
+  const recorde = r.ppm > Number(ler('recorde-ppm')) && r.precisao >= 0.9;
   $('r-recorde').hidden = !recorde;
-  if (recorde) salvarRecorde(r.ppm);
+  if (recorde) salvar('recorde-ppm', String(r.ppm));
 
   $('r-precisao').textContent = pct(r.precisao);
   $('r-precisao-conta').textContent = `(${r.digitados} − ${r.erros} erros) ÷ ${r.digitados} toques`;
@@ -160,6 +248,12 @@ entrada.addEventListener('paste', (e) => e.preventDefault());
 entrada.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') iniciar(false);
 });
+
+apelido.addEventListener('input', () => {
+  salvar('apelido', apelido.value.trim());
+  prepararDesafio();
+});
+document.querySelectorAll<HTMLElement>('.abas button').forEach((b) => b.addEventListener('click', () => trocarModo(b.dataset.modo as typeof modo)));
 
 $('reiniciar').addEventListener('click', () => iniciar(false));
 $('novo').addEventListener('click', () => iniciar(true));

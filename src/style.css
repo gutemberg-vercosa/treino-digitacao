@@ -56,7 +56,65 @@ h2 { margin: 0 0 10px; font-size: 1rem; }
 
 header { text-align: center; margin-bottom: 28px; }
 h1 { margin: 0; font-size: 2rem; line-height: 1.1; letter-spacing: -.03em; }
-.sub { margin: 10px 0 0; color: var(--muted); }
+.sub { margin: 10px 0 24px; color: var(--muted); }
+
+/* Abas: controle segmentado */
+
+.abas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgb(118 118 128 / .12);
+}
+.abas button { padding: 8px 12px; border-radius: 9px; font-size: .9rem; font-weight: 500; transition: background .2s; }
+.abas [aria-selected="true"] { background: var(--card); box-shadow: 0 1px 4px rgb(0 0 0 / .12); font-weight: 600; }
+
+@media (prefers-color-scheme: dark) {
+  .abas { background: rgb(118 118 128 / .24); }
+  .abas [aria-selected="true"] { background: #636366; }
+}
+
+/* Desafio do dia */
+
+.desafio { margin-bottom: 16px; }
+.desafio label { display: grid; gap: 6px; font-size: .9rem; font-weight: 500; }
+.desafio input {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.desafio input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.desafio p { margin: 10px 0 0; color: var(--muted); font-size: .85rem; }
+
+.ranking {
+  margin-top: 20px;
+  padding: 24px 16px;
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.ranking-msg { margin: 0 0 12px; color: var(--muted); }
+.ranking ol { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ranking li {
+  display: grid;
+  grid-template-columns: 2.5em 1fr auto;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--field);
+}
+.ranking li.meu { outline: 2px solid var(--accent); }
+.ranking li:nth-child(-n+3) .pos { color: var(--medio); font-weight: 700; }
+.ranking .pos { color: var(--muted); font-variant-numeric: tabular-nums; }
+.ranking .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.ranking .ppm { font-variant-numeric: tabular-nums; font-weight: 600; }
 
 /* Painel de digitação */
 
@@ -186,7 +244,10 @@ h1 { margin: 0; font-size: 2rem; line-height: 1.1; letter-spacing: -.03em; }
   main { padding: 72px 24px 80px; }
   header { margin-bottom: 40px; }
   h1 { font-size: 3.5rem; }
-  .sub { font-size: 1.2rem; }
+  .sub { font-size: 1.2rem; margin-bottom: 32px; }
+  .abas { display: inline-grid; border-radius: 999px; }
+  .abas button { padding: 7px 20px; border-radius: 999px; }
+  .ranking { padding: 32px 28px; border-radius: 24px; }
 
   .painel { padding: 28px; border-radius: 20px; }
   .texto { font-size: 1.3rem; }
