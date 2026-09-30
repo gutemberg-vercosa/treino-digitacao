@@ -1,10 +1,10 @@
 export const TEXTOS = [
-  'Um bom processo não depende de heróis. Ele funciona porque cada etapa é clara, repetível e medida, e porque os problemas aparecem cedo, quando ainda são baratos de resolver.',
-  'Antes de acelerar, estabilize. Um ritmo constante e previsível entrega mais no fim do dia do que picos de velocidade seguidos de pausas para corrigir erros.',
-  'A planilha começou pequena, com três colunas e uma fórmula. Um ano depois, tinha vinte abas, macros escondidas e ninguém sabia exatamente de onde vinha cada número.',
-  'Toda fila esconde um custo. Pedidos parados esperando aprovação, peças aguardando a próxima máquina e mensagens sem resposta consomem tempo sem agregar nada.',
-  'Aprender a programar é parecido com aprender um idioma: no começo você traduz palavra por palavra; com a prática, passa a pensar diretamente na nova língua.',
-  'Medir é o primeiro passo para melhorar, mas medir a coisa errada pode ser pior do que não medir. Um bom indicador mostra o problema, não apenas o esforço.',
   'Na feira de sábado, o vendedor de frutas sabia de cor o preço de tudo, quanto tinha vendido na semana anterior e quais clientes voltariam antes do meio-dia.',
-  'Digitar sem olhar para o teclado é uma questão de memória muscular. Os dedos aprendem o caminho das teclas, e a atenção fica livre para o conteúdo do texto.',
+  'O cheiro de bolo saindo do forno tomou conta da casa inteira. Em poucos minutos, todo mundo apareceu na cozinha perguntando, sem nenhuma pressa, se já dava para cortar.',
+  'A trilha começava larga e bem marcada, mas depois da ponte de madeira virava um caminho estreito entre as árvores. Lá no alto, a vista compensava cada passo.',
+  'Minha avó guardava os botões numa lata de biscoitos. Quando chovia, a gente despejava tudo sobre a mesa e passava a tarde separando por cor e tamanho.',
+  'O último ônibus da noite passou vazio pela avenida. O motorista cantava baixinho uma música antiga, e as luzes da cidade iam ficando para trás, uma a uma.',
+  'Plantar uma árvore é um gesto de confiança no futuro: quem planta raramente descansa na sombra, mas alguém, algum dia, vai agradecer em silêncio.',
+  'Aprender um instrumento exige paciência. As primeiras semanas soam estranhas, os dedos doem e as notas escapam, até que um dia a música simplesmente acontece.',
+  'O cachorro do vizinho late toda vez que o carteiro chega, mas abana o rabo com tanta vontade que ninguém consegue levar a bronca a sério.',
 ];
