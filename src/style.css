@@ -1,0 +1,198 @@
+/* Mobile first: a base é o celular; telas maiores ganham ajustes em @media (min-width). */
+
+:root {
+  --bg: #f5f5f7;
+  --card: #fff;
+  --field: #f5f5f7;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --pendente: #aeaeb2;
+  --accent: #0071e3;
+  --accent-soft: rgb(0 113 227 / .12);
+  --shadow: 0 4px 24px rgb(0 0 0 / .06);
+  --baixo: #ff3b30;
+  --medio: #ff9500;
+  --alto: #34c759;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000;
+    --card: #1c1c1e;
+    --field: #2c2c2e;
+    --text: #f5f5f7;
+    --muted: #98989d;
+    --pendente: #636366;
+    --accent: #2997ff;
+    --accent-soft: rgb(41 151 255 / .16);
+    --shadow: none;
+    --baixo: #ff453a;
+    --medio: #ff9f0a;
+    --alto: #30d158;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.47 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+main { max-width: 760px; margin: 0 auto; padding: 40px 16px 56px; }
+
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+
+h2 { margin: 0 0 10px; font-size: 1rem; }
+
+/* Cabeçalho */
+
+header { text-align: center; margin-bottom: 28px; }
+h1 { margin: 0; font-size: 2rem; line-height: 1.1; letter-spacing: -.03em; }
+.sub { margin: 10px 0 0; color: var(--muted); }
+
+/* Painel de digitação */
+
+.painel {
+  position: relative;
+  padding: 20px 16px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.painel:focus-within { box-shadow: var(--shadow), 0 0 0 3px var(--accent-soft); }
+
+.status { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; text-align: center; }
+.status span { display: block; color: var(--muted); font-size: .75rem; }
+.status strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+
+.texto {
+  margin: 0;
+  font: 1.1rem/1.75 var(--mono);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  color: var(--pendente);
+}
+.texto .certo { color: var(--text); }
+.texto .errado { color: var(--baixo); background: color-mix(in srgb, var(--baixo) 15%, transparent); border-radius: 3px; }
+.texto .atual { color: var(--text); box-shadow: -2px 0 0 var(--accent); animation: piscar 1s steps(1) infinite; }
+
+@keyframes piscar { 50% { box-shadow: none; } }
+
+/* Campo invisível sobre o painel: tocar em qualquer ponto abre o teclado no celular. */
+.entrada {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  resize: none;
+  font-size: 16px; /* evita o zoom automático do iOS */
+  caret-color: transparent;
+}
+
+.dica { margin: 16px 0 0; color: var(--muted); font-size: .85rem; text-align: center; }
+
+/* Botões */
+
+.acoes { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+.acoes button { padding: 10px 16px; border-radius: 999px; color: var(--accent); font-size: .95rem; }
+.acoes button:hover { background: var(--accent-soft); }
+
+.primario {
+  width: 100%;
+  padding: 14px 22px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--accent);
+}
+.primario:hover { filter: brightness(1.08); }
+
+/* Resultado */
+
+.resultado {
+  margin-top: 20px;
+  padding: 28px 16px 20px;
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  animation: surgir .35s ease-out;
+}
+
+@keyframes surgir { from { opacity: 0; transform: translateY(8px); } }
+
+.principal { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.rotulo { color: var(--muted); font-weight: 500; }
+.valor { font-size: 4rem; line-height: 1; letter-spacing: -.04em; }
+
+.faixa, .recorde { padding: 4px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600; }
+.faixa.baixo { color: var(--baixo); background: color-mix(in srgb, var(--baixo) 15%, transparent); }
+.faixa.medio { color: var(--medio); background: color-mix(in srgb, var(--medio) 15%, transparent); }
+.faixa.alto { color: var(--alto); background: color-mix(in srgb, var(--alto) 15%, transparent); }
+.recorde { color: var(--accent); background: var(--accent-soft); }
+
+.fatores { display: grid; gap: 10px; margin-top: 24px; }
+.fator { display: grid; gap: 2px; padding: 14px 16px; border-radius: 14px; background: var(--field); }
+.fator span { color: var(--muted); font-size: .85rem; }
+.fator strong { font-size: 1.4rem; letter-spacing: -.02em; }
+.fator code { color: var(--muted); font: .78rem/1.4 var(--mono); }
+
+.bloco { margin-top: 24px; }
+
+.grafico { display: block; width: 100%; height: 140px; }
+.grafico rect { fill: var(--accent); }
+.grafico rect.lento { fill: var(--baixo); }
+.grafico .media { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.legenda { margin: 8px 0 0; color: var(--muted); font-size: .8rem; }
+
+.teclas { display: flex; flex-wrap: wrap; gap: 8px; }
+.teclas span { display: flex; align-items: center; gap: 6px; }
+.teclas kbd {
+  min-width: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--field);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / .08);
+  font: 600 .95rem var(--mono);
+  text-align: center;
+}
+.teclas small { color: var(--muted); }
+
+.diagnostico { margin: 24px 0 20px; padding: 16px 18px; border-radius: 14px; background: var(--accent-soft); }
+.diagnostico h2 { margin-bottom: 6px; }
+.diagnostico p { margin: 0; }
+
+/* Referência */
+
+.ref { margin-top: 24px; color: var(--muted); font-size: .9rem; }
+.ref summary { list-style: none; text-align: center; color: var(--accent); cursor: pointer; }
+.ref summary::-webkit-details-marker { display: none; }
+.ref summary::after { content: " ›"; }
+.ref[open] summary::after { content: " ‹"; }
+.ref ul { padding-left: 18px; }
+.ref li { margin: 8px 0; }
+.ref strong { color: var(--text); }
+
+/* Telas médias e grandes */
+
+@media (min-width: 640px) {
+  main { padding: 72px 24px 80px; }
+  header { margin-bottom: 40px; }
+  h1 { font-size: 3.5rem; }
+  .sub { font-size: 1.2rem; }
+
+  .painel { padding: 28px; border-radius: 20px; }
+  .texto { font-size: 1.3rem; }
+
+  .resultado { margin-top: 28px; padding: 40px 28px 32px; border-radius: 24px; }
+  .valor { font-size: 5.5rem; }
+  .fatores { grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 32px; }
+  .primario { width: auto; display: block; margin: 0 auto; }
+}

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Treino de Digitação</title>
+  <meta name="description" content="Meça sua velocidade, precisão e a estabilidade do seu ritmo de digitação, trecho a trecho.">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Treino de Digitação</h1>
+      <p class="sub">Velocidade, precisão e a estabilidade do seu ritmo, trecho a trecho.</p>
+    </header>
+
+    <section class="painel">
+      <div class="status">
+        <div><span>PPM</span><strong id="vivo-ppm">0</strong></div>
+        <div><span>Precisão</span><strong id="vivo-precisao">100%</strong></div>
+        <div><span>Tempo</span><strong id="vivo-tempo">0 s</strong></div>
+      </div>
+      <p class="texto" id="texto"></p>
+      <textarea class="entrada" id="entrada" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+        aria-label="Digite o texto exibido" aria-describedby="texto"></textarea>
+      <p class="dica" id="dica">Toque no texto e comece a digitar. O tempo começa na primeira tecla.</p>
+    </section>
+
+    <div class="acoes">
+      <button type="button" id="reiniciar">Reiniciar</button>
+      <button type="button" id="novo">Novo texto</button>
+    </div>
+
+    <section class="resultado" id="resultado" hidden aria-live="polite">
+      <div class="principal">
+        <span class="rotulo">Palavras por minuto</span>
+        <strong class="valor" id="r-ppm"></strong>
+        <span class="faixa" id="r-faixa"></span>
+        <span class="recorde" id="r-recorde" hidden>Novo recorde pessoal</span>
+      </div>
+
+      <div class="fatores">
+        <div class="fator"><span>Precisão</span><strong id="r-precisao"></strong><code id="r-precisao-conta"></code></div>
+        <div class="fator"><span>Tempo</span><strong id="r-tempo"></strong><code id="r-tempo-conta"></code></div>
+        <div class="fator"><span>Estabilidade do ritmo</span><strong id="r-estabilidade"></strong><code>1 − variação entre trechos</code></div>
+      </div>
+
+      <div class="bloco">
+        <h2>Ritmo por trecho</h2>
+        <svg class="grafico" id="r-grafico" role="img" aria-label="Palavras por minuto em cada trecho do texto"></svg>
+        <p class="legenda">Cada barra é um trecho de 20 caracteres; a linha tracejada é a sua média. Em vermelho, o trecho mais lento.</p>
+      </div>
+
+      <div class="bloco" id="r-teclas-bloco">
+        <h2>Onde você mais errou</h2>
+        <div class="teclas" id="r-teclas"></div>
+      </div>
+
+      <div class="diagnostico">
+        <h2>O que isso significa</h2>
+        <p id="r-diag"></p>
+      </div>
+
+      <button type="button" class="primario" id="de-novo">Tentar outro texto</button>
+    </section>
+
+    <details class="ref">
+      <summary>Como ler o resultado</summary>
+      <ul>
+        <li><strong>PPM</strong>: palavras por minuto, contando 5 caracteres como uma palavra. Só os caracteres certos entram na conta.</li>
+        <li><strong>Precisão</strong>: toques certos ÷ total de toques. Erros corrigidos com o apagar continuam contando.</li>
+        <li><strong>Estabilidade</strong>: quanto o seu ritmo se manteve igual entre os trechos. Acima de 85%, o ritmo está constante.</li>
+        <li>Como referência, 40 PPM é uma velocidade média; acima de 60 PPM já é rápido.</li>
+      </ul>
+    </details>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
