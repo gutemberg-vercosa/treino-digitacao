@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { avaliarEnvio, JOGADOR, validarApelido } from './regras';
-import { dataHoje, fraseDoDia, FRASES_DIARIAS } from '../../src/desafio';
+import { dataHoje, fraseDoDia } from './desafio';
+import { FRASES } from './frases';
 
 describe('JOGADOR', () => {
   it('aceita só UUIDs', () => {
@@ -57,12 +58,29 @@ describe('frase do dia', () => {
     expect(dataHoje(new Date('2026-10-02T03:00:00Z'))).toBe('2026-10-02');
   });
 
-  it('é a mesma para a mesma data e diferente no dia seguinte', () => {
+  /** Todas as datas de um ano, de 1º de janeiro a 31 de dezembro. */
+  const diasDoAno = (ano: number) => {
+    const dias = [];
+    for (let d = new Date(`${ano}-01-01T12:00:00Z`); d.getUTCFullYear() === ano; d.setUTCDate(d.getUTCDate() + 1)) {
+      dias.push(d.toISOString().slice(0, 10));
+    }
+    return dias;
+  };
+
+  it('é sempre a mesma para a mesma data', () => {
     expect(fraseDoDia('2026-10-01')).toBe(fraseDoDia('2026-10-01'));
-    expect(fraseDoDia('2026-10-01')).not.toBe(fraseDoDia('2026-10-02'));
   });
 
-  it('só usa frases da lista', () => {
-    expect(FRASES_DIARIAS).toContain(fraseDoDia('2031-01-01'));
+  it('nunca se repete dentro de um ano, inclusive em ano bissexto', () => {
+    for (const ano of [2027, 2028]) {
+      const frases = diasDoAno(ano).map(fraseDoDia);
+      expect(frases.every((f) => FRASES.includes(f))).toBe(true);
+      expect(new Set(frases).size).toBe(frases.length);
+    }
+  });
+
+  it('muda de ordem de um ano para o outro', () => {
+    const ordem = (ano: number) => diasDoAno(ano).slice(0, 30).map(fraseDoDia);
+    expect(ordem(2027)).not.toEqual(ordem(2028));
   });
 });

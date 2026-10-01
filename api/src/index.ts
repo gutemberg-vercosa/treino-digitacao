@@ -1,4 +1,4 @@
-import { dataHoje, fraseDoDia } from '../../src/desafio';
+import { dataHoje, fraseDoDia } from './desafio';
 import { avaliarEnvio, JOGADOR, validarApelido } from './regras';
 
 interface Env {
@@ -29,9 +29,13 @@ async function tratar(req: Request, env: Env): Promise<[unknown, number]> {
   const url = new URL(req.url);
   const hoje = dataHoje();
 
-  if (req.method === 'GET' && url.pathname === '/ranking') {
-    const jogador = url.searchParams.get('jogador');
-    return [await ranking(env.DB, hoje, jogador && JOGADOR.test(jogador) ? jogador : null), 200];
+  if (req.method === 'GET') {
+    if (url.pathname === '/desafio') return [{ data: hoje, frase: fraseDoDia(hoje) }, 200];
+    if (url.pathname === '/ranking') {
+      const jogador = url.searchParams.get('jogador');
+      return [await ranking(env.DB, hoje, jogador && JOGADOR.test(jogador) ? jogador : null), 200];
+    }
+    return [{ erro: 'Não encontrado.' }, 404];
   }
 
   if (req.method !== 'POST') return [{ erro: 'Não encontrado.' }, 404];
@@ -39,10 +43,9 @@ async function tratar(req: Request, env: Env): Promise<[unknown, number]> {
   const jogador = typeof corpo.jogador === 'string' && JOGADOR.test(corpo.jogador) ? corpo.jogador : null;
   if (!jogador) return [{ erro: 'Jogador inválido.' }, 400];
 
-  const jaJogou = () => env.DB.prepare('SELECT 1 FROM resultados WHERE data = ? AND jogador = ?').bind(hoje, jogador).first();
-
   if (url.pathname === '/inicio') {
-    if (await jaJogou()) return [{ erro: JA_JOGOU }, 409];
+    const jaJogou = await env.DB.prepare('SELECT 1 FROM resultados WHERE data = ? AND jogador = ?').bind(hoje, jogador).first();
+    if (jaJogou) return [{ erro: JA_JOGOU }, 409];
     // Só a primeira chamada do dia grava a hora; as seguintes mantêm o relógio original.
     await env.DB.prepare('INSERT OR IGNORE INTO inicios (data, jogador, inicio) VALUES (?, ?, ?)').bind(hoje, jogador, Date.now()).run();
     return [{ ok: true }, 200];

@@ -4,5 +4,5 @@
     "lib": ["ES2022"],
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["src", "../src/desafio.ts", "../src/sessao.ts"]
+  "include": ["src", "../src/sessao.ts"]
 }

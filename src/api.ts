@@ -19,7 +19,8 @@ async function chamar<T>(caminho: string, corpo?: object): Promise<T> {
   return dados;
 }
 
-export const buscarRanking = (jogador: string) => chamar<Ranking>(`/ranking?jogador=${jogador}`);
+export const buscarDesafio = () => chamar<{ data: string; frase: string }>('/desafio');
+export const buscarRanking =(jogador: string) => chamar<Ranking>(`/ranking?jogador=${jogador}`);
 export const iniciarDesafio = (jogador: string) => chamar<{ ok: true }>('/inicio', { jogador });
 export const enviarResultado = (jogador: string, apelido: string, precisao: number) =>
   chamar<Ranking>('/resultado', { jogador, apelido, precisao });

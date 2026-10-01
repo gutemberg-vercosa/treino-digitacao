@@ -9,5 +9,3 @@ database_id = "443d49a0-47bb-4071-b839-269a46807b6c"
 
 [vars]
 ORIGENS = "https://gutemberg-vercosa.github.io,http://localhost:5173,http://localhost:4173"
-
-# O segredo que assina os tokens fica fora do código: `npx wrangler secret put SEGREDO`

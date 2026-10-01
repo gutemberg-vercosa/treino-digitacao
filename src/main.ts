@@ -1,5 +1,4 @@
-import { buscarRanking, enviarResultado, iniciarDesafio, type Ranking } from './api';
-import { dataHoje, fraseDoDia } from './desafio';
+import { buscarDesafio, buscarRanking, enviarResultado, iniciarDesafio, type Ranking } from './api';
 import { Sessao, type Resultado, type Trecho } from './sessao';
 import { TEXTOS } from './textos';
 
@@ -30,22 +29,32 @@ let modo: 'treino' | 'desafio' = 'treino';
 let sessao: Sessao;
 let indice = -1;
 let relogio = 0;
+let desafio: { data: string; frase: string } | null = null;
 let inicioDesafio: Promise<unknown> = Promise.resolve();
 
 /** No desafio, só a primeira rodada completa do dia vai para o ranking. */
-const valendo = () => modo === 'desafio' && ler('desafio-feito') !== dataHoje();
+const valendo = () => modo === 'desafio' && !!desafio && ler('desafio-feito') !== desafio.data;
+
+/**
+ * Próximo texto do treino. Os textos saem de uma fila embaralhada, guardada no navegador:
+ * nenhum se repete até todos terem aparecido.
+ */
+function proximoTexto(): number {
+  let fila: number[] = [];
+  try { fila = JSON.parse(ler('fila-treino') || '[]'); } catch { /* fila corrompida: começa outra */ }
+  fila = fila.filter((i) => i >= 0 && i < TEXTOS.length);
+  if (!fila.length) {
+    fila = TEXTOS.map((_, i) => i).sort(() => Math.random() - 0.5);
+    if (fila[0] === indice) fila.push(fila.shift()!); // evita repetir o texto atual na virada da fila
+  }
+  const proximo = fila.shift()!;
+  salvar('fila-treino', JSON.stringify(fila));
+  return proximo;
+}
 
 function iniciar(novoTexto: boolean) {
-  if (modo === 'desafio') {
-    sessao = new Sessao(fraseDoDia(dataHoje()));
-  } else {
-    if (novoTexto) {
-      // Sorteia um texto diferente do atual.
-      const anterior = indice;
-      while (indice === anterior) indice = Math.floor(Math.random() * TEXTOS.length);
-    }
-    sessao = new Sessao(TEXTOS[indice]);
-  }
+  if (modo === 'treino' && novoTexto) indice = proximoTexto();
+  sessao = new Sessao(modo === 'desafio' ? desafio?.frase ?? '' : TEXTOS[indice]);
   clearInterval(relogio);
   entrada.value = '';
   resultado.hidden = true;
@@ -112,10 +121,11 @@ function prepararDesafio() {
   $('novo').hidden = noDesafio;
   $('de-novo').hidden = noDesafio;
 
+  const semDesafio = noDesafio && !desafio;
   const semApelido = valendo() && apelido.value.trim().length < 2;
-  entrada.disabled = semApelido || sessao.terminou;
-  $('dica').textContent = semApelido ? 'Escolha um apelido acima para começar.' : DICA;
-  $('desafio-status').textContent = !noDesafio ? ''
+  entrada.disabled = semDesafio || semApelido || sessao.terminou;
+  $('dica').textContent = semDesafio ? 'Carregando o desafio de hoje…' : semApelido ? 'Escolha um apelido acima para começar.' : DICA;
+  $('desafio-status').textContent = !noDesafio || semDesafio ? ''
     : valendo() ? 'A frase é a mesma para todo mundo e muda à meia-noite. Vale a primeira tentativa: recomeçar não zera o relógio.'
     : 'Você já participou hoje. Pode praticar a frase à vontade; o ranking não muda.';
 }
@@ -129,7 +139,7 @@ async function enviar(precisao: number) {
     mostrarRanking(rk);
   } catch (e) {
     const msg = (e as Error).message;
-    if (msg.includes('já fez')) salvar('desafio-feito', dataHoje());
+    if (msg.includes('já fez')) salvar('desafio-feito', desafio!.data);
     $('ranking-msg').textContent = msg;
   }
   prepararDesafio();
@@ -162,11 +172,20 @@ function mostrarRanking(rk: Ranking) {
   }));
 }
 
-function trocarModo(novo: typeof modo) {
+async function trocarModo(novo: typeof modo) {
   modo = novo;
   document.querySelectorAll<HTMLElement>('.abas button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.modo === novo)));
   iniciar(novo === 'treino');
-  if (novo === 'desafio') carregarRanking();
+  if (novo !== 'desafio') return;
+
+  carregarRanking();
+  if (desafio) return;
+  try {
+    desafio = await buscarDesafio();
+    if (modo === 'desafio') iniciar(false);
+  } catch (e) {
+    $('dica').textContent = (e as Error).message;
+  }
 }
 
 function faixaVelocidade(ppm: number): [string, string] {

@@ -17,16 +17,16 @@ Mede velocidade, precisão e a estabilidade do ritmo de digitação, trecho a tr
   - As teclas em que você mais errou.
   - Um diagnóstico do que priorizar: precisão, constância ou velocidade.
 - Guarda o seu recorde pessoal no navegador.
-- **Desafio do dia**: uma frase igual para todo mundo, que muda à meia-noite (horário de Brasília), com ranking das pessoas mais rápidas do dia.
+- **Desafio do dia**: uma frase igual para todo mundo, que muda à meia-noite (horário de Brasília), com ranking das pessoas mais rápidas do dia. São 367 frases, embaralhadas numa ordem diferente a cada ano, então nenhuma se repete dentro do mesmo ano.
+- **Treino livre** com 150 textos, que só se repetem depois de todos terem aparecido.
 - Funciona no celular: tocar no texto abre o teclado.
 
 ## Tecnologias
 
 - TypeScript e Vite, sem frameworks.
-- Vitest para os testes da lógica de medição (`src/sessao.test.ts`).
+- Vitest para os testes da medição e das regras da API.
 - GitHub Actions roda os testes, gera o build e publica no GitHub Pages a cada push.
 - Layout mobile first, com tema claro e escuro automático.
-
 - API do ranking em Cloudflare Workers, com banco SQL D1.
 
 ## Ranking e proteção contra trapaça
@@ -44,11 +44,12 @@ O site é estático, então o ranking fica numa API separada (`api/`). Para que 
 | Arquivo | Responsabilidade |
 |---|---|
 | `src/sessao.ts` | Lógica pura: estado de cada caractere, erros, PPM, precisão e ritmo por trecho |
-| `src/desafio.ts` | Frase do dia, compartilhada entre site e API |
-| `src/api.ts` | Chamadas à API do ranking |
-| `src/main.ts` | Interface: captura da digitação, desafio, resultado e ranking |
+| `src/api.ts` | Chamadas à API: frase do dia, início, resultado e ranking |
+| `src/main.ts` | Interface: captura da digitação, treino, desafio, resultado e ranking |
 | `src/textos.ts` | Textos do treino livre |
-| `api/src/index.ts` | Rotas da API: início do desafio, envio do resultado e ranking |
+| `api/src/index.ts` | Rotas da API: frase do dia, início do desafio, envio do resultado e ranking |
+| `api/src/desafio.ts` | Escolha da frase do dia, com a ordem embaralhada a cada ano |
+| `api/src/frases.ts` | Frases do desafio do dia |
 | `api/src/regras.ts` | Validações: apelido, limites de PPM, precisão e tempo |
 | `api/schema.sql` | Tabelas do banco |
 
